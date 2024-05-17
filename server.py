@@ -8,7 +8,7 @@ import time
 def handle_client(client_socket, buffer, empty, full):
     try:
         # Enviar confirmación de conexión al cliente
-        client_socket.send(f"Hemos entablado comunicación con ip {client_socket.getpeername()[0]} y puerto {client_socket.getsockname()[1]}".encode())
+        client_socket.send(f"Comunicación con ip {client_socket.getpeername()[0]} y puerto {client_socket.getsockname()[1]}".encode())
 
         while True:
             # Recibir solicitud del cliente
