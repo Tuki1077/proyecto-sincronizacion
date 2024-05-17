@@ -7,6 +7,9 @@ import time
 
 def handle_client(client_socket, buffer, empty, full):
     try:
+        thread_id = threading.get_ident()  # Obtener el ID del hilo actual
+        print(f"handle_client thread ID: {thread_id}")
+        
         # Enviar confirmación de conexión al cliente
         client_socket.send(f"Comunicación con ip {client_socket.getpeername()[0]} y puerto {client_socket.getsockname()[1]}".encode())
 
@@ -36,19 +39,22 @@ def handle_client(client_socket, buffer, empty, full):
 
 def consumer(buffer, empty, full):
     while True:
+        print(f"Consumer thread {threading.get_ident()} Esperando...")
         full.acquire()  # Espera a que haya un elemento en el buffer
+        print(f"Consumer thread {threading.get_ident()} Ya tengo...")
         request, client_socket = buffer.get()  # Obtener la solicitud y el socket del buffer
         empty.release()  # Liberar un espacio vacío
-        print(f"Procesando request: {request}, buffer size: {buffer.qsize()}")
+        thread_id = threading.get_ident()  # Obtener el ID del hilo actual
+        print(f"Procesando request: {request}, buffer size: {buffer.qsize()}, thread ID: {thread_id}")
 
         # Procesar la solicitud (listar el contenido del folder)
         try:
             folder_content = os.listdir(request)  # Obtener el contenido del directorio
             thread_name = threading.current_thread().name  # Obtener el nombre del hilo actual
             # Crear la respuesta con el nombre del hilo y el contenido del directorio
-            response = f"Thread {thread_name} processed request. Folder contents: {folder_content}"
+            response = f"Thread {thread_name}"
 
-            # Enviar la respuesta al cliente
+            # # Enviar la respuesta al cliente
             client_socket.send(response.encode())
             print(f"Enviando respuesta: {response}")  # Agregar mensaje de depuración
         except Exception as e:
@@ -77,19 +83,32 @@ def Server(port, buffer_size, num_threads):
     server_socket.listen(5)  # Escuchar hasta 5 conexiones entrantes
     print(f"Servidor escuchando en el puerto {port}")
 
+    lst = []
+
     # Crear hilos consumidores para procesar las solicitudes del buffer
     for _ in range(num_threads):
         thread = threading.Thread(target=consumer, args=(buffer, empty, full))
         thread.daemon = True  # Hacer que los hilos sean daemon para que terminen con el programa principal
         thread.start()
+        print(f"Consumer thread started with ID: {thread.ident}")
+        lst.append(thread)
 
     while True:
+        # for n in lst:
+        #     status = n.is_alive()
+        #     print("Hola soy el hilo", n , "y el status es:", status)
+        
         # Aceptar conexiones entrantes de clientes
         client_socket, addr = server_socket.accept()
         print(f"Conexión aceptada de {addr}")
         # Crear un hilo para manejar la conexión con el cliente
         client_handler = threading.Thread(target=handle_client, args=(client_socket, buffer, empty, full))
         client_handler.start()
+        print(f"Client handler thread started with ID: {client_handler.ident}")
+
+        # print(f"Consumer thread {threading.get_ident()} Esperando...")
+        # full.acquire()  # Espera a que haya un elemento en el buffer
+        # print(f"Consumer thread {threading.get_ident()} Ya lo tengo")
 
 if __name__ == "__main__":
     # Verificar que se hayan proporcionado los argumentos correctos (puerto, tamaño del buffer, número de hilos)
