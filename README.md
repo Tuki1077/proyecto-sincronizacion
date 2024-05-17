@@ -26,3 +26,10 @@ Para iniciar el servidor, usa el siguiente comando desde la terminal, especifica
 
 ```bash
 python3 server.py <puerto> <elementos en buffer> <hilos>
+```
+### Cliente
+
+Para iniciar el cliente, usa el siguiente comando desde la terminal, especificando el ip, el puerto y el path:
+
+```bash
+python3 client.py <ip> <puerto> <path>
