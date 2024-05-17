@@ -19,7 +19,7 @@ def handle_client(client_socket, buffer, empty, full):
                     buffer.put((request, client_socket))  # Poner la solicitud y el socket en el buffer
                     full.release()  # Liberar un espacio lleno
                     print(f"Request aceptado: {request}, buffer size: {buffer.qsize()}")
-                    client_socket.send(f"request aceptado, y almacenado en la casilla del buffer numero {buffer.qsize()}".encode())
+                    client_socket.send(f"request aceptado, y almacenado en casilla de buffer numero {buffer.qsize()}".encode())
                     break  # Salir del bucle después de aceptar la solicitud
                 else:
                     # Si el buffer está lleno, rechazar la solicitud
